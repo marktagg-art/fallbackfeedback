@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<!--
+    fall back feedback 01 
+    3 "murmurations" with start/reset controls
+    link to composer for exploration
+    4J … MT & his Famous Robot Orchestra ⭐️🤖⭐️
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fall back feedback</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020a42;
+            --text-light: #faf9f5;
+            --text-mid: #8a8a9a;
+            --button-orange: #d86312;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-light);
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+        }
+
+        .header h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 48px;
+            font-weight: 600;
+            /* letter-spacing: 0.15em; */
+            margin-bottom: 12px;
+        }
+
+        .header .subtitle {
+            color: var(--text-mid);
+            font-size: 14px;
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .gallery {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+            padding: 40px 20px 80px;
+        }
+
+        .canvas-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .canvas-label {
+            font-family: 'Inter', sans-serif;
+            font-size: 24px;
+            letter-spacing: 0.2em;
+            color: var(--text-mid);
+        }
+
+        .canvas-container {
+            width: 100%;
+            max-width: 540px;
+            aspect-ratio: 9 / 16;
+            border-radius: 4px;
+            overflow: hidden;
+            background: #1a1a1a;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+
+        .button {
+            background: var(--button-orange);
+            color: white;
+            border: none;
+            padding: 12px 36px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.05em;
+            /* text-transform: uppercase; */
+        }
+
+        .button:hover {
+            background: #c45810;
+            transform: translateY(-2px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button:disabled {
+            background: #5a5a6a;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .compose-section {
+            text-align: center;
+            padding: 40px 20px 80px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+        }
+
+        .compose-section p {
+            color: var(--text-mid);
+            font-size: 14px;
+            margin-bottom: 20px;
+            letter-spacing: 0.05em;
+        }
+
+        .button.compose {
+            background: transparent;
+            border: 1px solid var(--button-orange);
+            color: var(--button-orange);
+        }
+
+        .button.compose:hover {
+            border-color: #f57a2a;
+            color: #f57a2a;
+            background: transparent;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: var(--text-mid);
+            height: 18px;
+            letter-spacing: 0.03em;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 36px;
+            }
+            
+            .canvas-container {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>fall back feedback</h1>
+        <div class="subtitle">strange power murmur</div>
+    </div>
+
+    <div class="gallery">
+        <!-- Canvas 1 -->
+        <div class="canvas-wrapper">
+            <div class="canvas-label">i</div>
+            <div class="canvas-container" id="canvas-container-1"></div>
+            <button class="button" id="btn-1" onclick="toggleCanvas(1)">begin</button>
+            <div class="progress-text" id="progress-1"></div>
+        </div>
+
+        <!-- Canvas 2 -->
+        <div class="canvas-wrapper">
+            <div class="canvas-label">ii</div>
+            <div class="canvas-container" id="canvas-container-2"></div>
+            <button class="button" id="btn-2" onclick="toggleCanvas(2)">begin</button>
+            <div class="progress-text" id="progress-2"></div>
+        </div>
+
+        <!-- Canvas 3 -->
+        <div class="canvas-wrapper">
+            <div class="canvas-label">iii</div>
+            <div class="canvas-container" id="canvas-container-3"></div>
+            <button class="button" id="btn-3" onclick="toggleCanvas(3)">begin</button>
+            <div class="progress-text" id="progress-3"></div>
+        </div>
+    </div>
+
+    <div class="compose-section">
+        <p>explore</p>
+        <a href="composer.html"><button class="button compose">compose</button></a>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // CONFIGURATION FOR EACH CANVAS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const configs = [
+            // Canvas 1
+            {
+                seed: 27,
+                layerCount: 27,
+                maxCycles: 3,
+                pathsPerLayer: 3,
+                iterationsPerLayer: 12,
+                elementSize: 8,
+                sizeVariation: 1,
+                spacing: 18,
+                drift: 12,
+                rhoStart: 21,
+                rhoEnd: 36,
+                scale: 36,
+                offsetX: -400,
+                offsetY: 0,
+                rotation: 240,
+                bgColor: [46, 24, 0],
+                elementColors: [
+                    [255, 0, 0],
+                    [0, 255, 0],
+                    [0, 0, 255]
+                ],
+                elementOpacities: [100, 100, 100]
+            },
+            // Canvas 2
+            {
+                seed: 27,
+                layerCount: 27,
+                maxCycles: 6,
+                pathsPerLayer: 3,
+                iterationsPerLayer: 15,
+                elementSize: 8,
+                sizeVariation: 1,
+                spacing: 18,
+                drift: 15,
+                rhoStart: 24,
+                rhoEnd: 36,
+                scale: 50,
+                offsetX: -400,
+                offsetY: 30,
+                rotation: 350,
+                bgColor: [237, 237, 237],
+                elementColors: [
+                    [245, 193, 193],
+                    [255, 255, 255],
+                    [196, 223, 248]
+                ],
+                elementOpacities: [100, 100, 100]
+            },
+            // Canvas 3
+            {
+                seed: 27,
+                layerCount: 27,
+                maxCycles: 6,
+                pathsPerLayer: 3,
+                iterationsPerLayer: 18,
+                elementSize: 8,
+                sizeVariation: 1,
+                spacing: 18,
+                drift: 15,
+                rhoStart: 21,
+                rhoEnd: 36,
+                scale: 50,
+                offsetX: -400,
+                offsetY: -210,
+                rotation: 210,
+                bgColor: [174, 209, 122],
+                elementColors: [
+                    [159, 100, 180],
+                    [255, 169, 20],
+                    [66, 66, 66]
+                ],
+                elementOpacities: [100, 100, 100]
+            }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // CANVAS STATE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        const canvasWidth = 1080;
+        const canvasHeight = 1920;
+        const sigma = 10;
+        const beta = 8 / 3;
+
+        let sketches = [null, null, null];
+        let states = [
+            { running: false, started: false },
+            { running: false, started: false },
+            { running: false, started: false }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5 SKETCH FACTORY
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function createSketch(index) {
+            return function(p) {
+                const config = configs[index];
+                let currentLayer = 0;
+                let currentIteration = 0;
+                let iterationsPerLayer = config.iterationsPerLayer * 1000;
+                let paths = [];
+                let layerSeeds = [];
+                let currentCycle = 0;
+                let isComplete = false;
+
+                class LorenzPath {
+                    constructor(layerIndex, pathIndex, rho) {
+                        this.layerIndex = layerIndex;
+                        this.pathIndex = pathIndex;
+                        this.rho = rho;
+                        
+                        let angle = (pathIndex / config.pathsPerLayer) * p.TWO_PI;
+                        let offset = 0.01;
+                        this.x = offset * p.cos(angle) + p.random(-0.005, 0.005);
+                        this.y = offset * p.sin(angle) + p.random(-0.005, 0.005);
+                        this.z = p.random(-0.005, 0.005);
+                        
+                        this.colorIndex = pathIndex % 3;
+                        this.px = this.x;
+                        this.py = this.y;
+                        this.pz = this.z;
+                        this.stepCount = p.floor(p.random(config.spacing));
+                        this.rotationOffset = (layerIndex / config.layerCount) * 0.25;
+                        this.individualVariation = p.random(0.7, 1.3);
+                    }
+
+                    step(dt) {
+                        this.px = this.x;
+                        this.py = this.y;
+                        this.pz = this.z;
+
+                        let dx = sigma * (this.y - this.x);
+                        let dy = this.x * (this.rho - this.z) - this.y;
+                        let dz = this.x * this.y - beta * this.z;
+
+                        this.x += dx * dt;
+                        this.y += dy * dt;
+                        this.z += dz * dt;
+                        this.stepCount++;
+                    }
+
+                    getScreenPos(x, y, z) {
+                        let angle = (config.rotation * p.PI) / 180 + this.rotationOffset;
+                        let rx = x * p.cos(angle) - z * p.sin(angle);
+                        let rz = x * p.sin(angle) + z * p.cos(angle);
+                        let tiltAngle = p.PI * 0.12;
+                        let ry = y * p.cos(tiltAngle) - rz * p.sin(tiltAngle);
+                        
+                        let sx = p.width / 2 + rx * config.scale + config.offsetX;
+                        let sy = p.height / 2 + ry * config.scale + config.offsetY;
+                        return { x: sx, y: sy };
+                    }
+
+                    draw(progress) {
+                        if (this.stepCount % config.spacing !== 0) return;
+                        
+                        let layerProgress = this.layerIndex / (config.layerCount - 1);
+                        let col = config.elementColors[this.colorIndex];
+                        let baseOpacity = config.elementOpacities[this.colorIndex];
+                        
+                        let curr = this.getScreenPos(this.x, this.y, this.z);
+                        let prev = this.getScreenPos(this.px, this.py, this.pz);
+                        let dir = p.atan2(curr.y - prev.y, curr.x - prev.x);
+                        
+                        let noiseVal = p.noise(this.x * 0.5, this.y * 0.5, this.stepCount * 0.01);
+                        let driftX = (noiseVal - 0.5) * config.drift * 2;
+                        let driftY = (p.noise(this.y * 0.5, this.z * 0.5, this.stepCount * 0.01) - 0.5) * config.drift * 2;
+                        
+                        let drawX = curr.x + driftX;
+                        let drawY = curr.y + driftY;
+                        
+                        let baseSize = config.elementSize * this.individualVariation;
+                        let sizeNoise = 1 + (p.noise(this.stepCount * 0.1, this.pathIndex) - 0.5) * config.sizeVariation;
+                        let size = baseSize * sizeNoise;
+                        
+                        let depthFade = p.map(layerProgress, 0, 1, 0.5, 1.0);
+                        let opacity = baseOpacity * depthFade * (0.7 + noiseVal * 0.6);
+                        
+                        p.push();
+                        p.translate(drawX, drawY);
+                        p.rotate(dir + p.PI/2);
+                        p.noStroke();
+                        p.fill(col[0], col[1], col[2], opacity);
+                        
+                        let h = size * 1.6;
+                        let w = size * 0.9;
+                        p.triangle(0, -h/2, -w/2, h/2, w/2, h/2);
+                        p.pop();
+                    }
+                }
+
+                function initializeLayer(layerIndex) {
+                    p.randomSeed(layerSeeds[layerIndex]);
+                    let layerProgress = layerIndex / (config.layerCount - 1);
+                    let rho = p.lerp(config.rhoStart, config.rhoEnd, layerProgress);
+                    
+                    paths = [];
+                    for (let i = 0; i < config.pathsPerLayer; i++) {
+                        paths.push(new LorenzPath(layerIndex, i, rho));
+                    }
+                    currentIteration = 0;
+                }
+
+                p.setup = function() {
+                    p.createCanvas(canvasWidth, canvasHeight);
+                    p.pixelDensity(1);
+                    p.background(config.bgColor[0], config.bgColor[1], config.bgColor[2]);
+                    p.noLoop();
+                };
+
+                p.startDrawing = function() {
+                    p.randomSeed(config.seed);
+                    p.noiseSeed(config.seed);
+                    
+                    layerSeeds = [];
+                    for (let i = 0; i < config.layerCount; i++) {
+                        layerSeeds.push(p.floor(p.random(1, 999999)));
+                    }
+                    
+                    currentLayer = 0;
+                    currentCycle = 0;
+                    isComplete = false;
+                    
+                    p.background(config.bgColor[0], config.bgColor[1], config.bgColor[2]);
+                    initializeLayer(0);
+                    p.loop();
+                };
+
+                p.draw = function() {
+                    if (isComplete) return;
+
+                    let stepsPerFrame = 300;
+                    let dt = 0.006;
+
+                    for (let i = 0; i < stepsPerFrame && currentIteration < iterationsPerLayer; i++) {
+                        let iterProgress = currentIteration / iterationsPerLayer;
+                        for (let path of paths) {
+                            path.step(dt);
+                            path.draw(iterProgress);
+                        }
+                        currentIteration++;
+                    }
+
+                    // Update progress
+                    let totalLayers = config.layerCount * config.maxCycles;
+                    let completedLayers = currentCycle * config.layerCount + currentLayer;
+                    let layerProgress = currentIteration / iterationsPerLayer;
+                    let overallProgress = (completedLayers + layerProgress) / totalLayers;
+                    document.getElementById('progress-' + (index + 1)).textContent = 
+                        'cycle ' + (currentCycle + 1) + '/' + config.maxCycles + 
+                        ' — layer ' + (currentLayer + 1) + '/' + config.layerCount;
+
+                    if (currentIteration >= iterationsPerLayer) {
+                        currentLayer++;
+                        
+                        if (currentLayer >= config.layerCount) {
+                            currentCycle++;
+                            
+                            if (currentCycle >= config.maxCycles) {
+                                isComplete = true;
+                                p.noLoop();
+                                document.getElementById('progress-' + (index + 1)).textContent = 'Complete';
+                                let btn = document.getElementById('btn-' + (index + 1));
+                                btn.textContent = 'again';
+                                btn.disabled = false;
+                                states[index].running = false;
+                            } else {
+                                p.randomSeed(config.seed + currentCycle * 1000);
+                                layerSeeds = [];
+                                for (let i = 0; i < config.layerCount; i++) {
+                                    layerSeeds.push(p.floor(p.random(1, 999999)));
+                                }
+                                currentLayer = 0;
+                                initializeLayer(0);
+                            }
+                        } else {
+                            initializeLayer(currentLayer);
+                        }
+                    }
+                };
+
+                p.reset = function() {
+                    isComplete = false;
+                    currentLayer = 0;
+                    currentCycle = 0;
+                    currentIteration = 0;
+                    p.background(config.bgColor[0], config.bgColor[1], config.bgColor[2]);
+                    p.noLoop();
+                };
+            };
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // CONTROL FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function toggleCanvas(num) {
+            let index = num - 1;
+            let btn = document.getElementById('btn-' + num);
+            
+            if (!states[index].started) {
+                // First start - sketch already exists, just start drawing
+                sketches[index].startDrawing();
+                states[index].started = true;
+                states[index].running = true;
+                btn.textContent = 'spinning...';
+                btn.disabled = true;
+            } else if (!states[index].running) {
+                // Reset and restart
+                sketches[index].reset();
+                sketches[index].startDrawing();
+                states[index].running = true;
+                btn.textContent = 'spinning...';
+                btn.disabled = true;
+            }
+        }
+
+        // Initialize canvases immediately at full size with background color
+        window.addEventListener('load', function() {
+            for (let i = 0; i < 3; i++) {
+                // Create the sketch immediately but don't start drawing
+                sketches[i] = new p5(createSketch(i), 'canvas-container-' + (i + 1));
+            }
+        });
+
+        function rgbToHex(rgb) {
+            return '#' + rgb.map(x => {
+                const hex = Math.round(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

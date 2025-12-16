@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<!--
+    fall back + feedback 01: murmur composer
+    Lorenz attractor = scaffolding for flock behavior
+    Discrete elements + strange powers
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>fall back + feedback 01: murmur composer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #020a42;
+            --text-light: #faf9f5;
+            --text-mid: #8a8a9a;
+            --panel-bg: rgba(255, 255, 255, 0.06);
+            --input-bg: rgba(255, 255, 255, 0.08);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --button-orange: #d86312;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-light);
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .sidebar {
+            width: 340px;
+            flex-shrink: 0;
+            background: var(--panel-bg);
+            backdrop-filter: blur(10px);
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .sidebar h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 600;
+            /* letter-spacing: 0.1em; */
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .sidebar .subtitle {
+            color: var(--text-mid);
+            font-size: 13px;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .control-section {
+            margin-bottom: 28px;
+        }
+
+        .control-section h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            /* letter-spacing: 0.1em; */
+            color: var(--text-light);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-section h3::before {
+            content: '•';
+            color: var(--button-orange);
+            font-weight: bold;
+        }
+
+        .seed-input {
+            width: 100%;
+            background: var(--input-bg);
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'DM Sans', monospace;
+            font-size: 14px;
+            margin-bottom: 12px;
+            border: 1px solid var(--input-border);
+            text-align: center;
+            color: var(--text-light);
+        }
+
+        .seed-input:focus {
+            outline: none;
+            border-color: var(--button-orange);
+            box-shadow: 0 0 0 2px rgba(216, 99, 18, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .seed-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .control-group {
+            margin-bottom: 18px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 13px;
+            /* font-weight: 400; */
+            color: var(--text-light);
+            margin-bottom: 6px;
+        }
+
+        .control-group .hint {
+            font-size: 11px;
+            color: var(--text-mid);
+            margin-top: 4px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--input-border);
+            border-radius: 2px;
+            outline: none;
+            appearance: none;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--button-orange);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .slider-container input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            background: #f57a2a;
+        }
+
+        .slider-container input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            background: var(--button-orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .value-display {
+            font-family: 'DM Sans', monospace;
+            font-size: 12px;
+            color: var(--text-mid);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .button {
+            background: var(--button-orange);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+            font-family: 'DM Sans', sans-serif;
+            letter-spacing: 0.03em;
+        }
+
+        .button:hover {
+            background: #c45810;
+            transform: translateY(-1px);
+        }
+
+        .button:active {
+            transform: translateY(0);
+        }
+
+        .button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--input-border);
+        }
+
+        .button.secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--text-mid);
+        }
+
+        .button.tertiary {
+            background: rgba(216, 99, 18, 0.2);
+            border: 1px solid var(--button-orange);
+            color: var(--button-orange);
+        }
+
+        .button.tertiary:hover {
+            background: rgba(216, 99, 18, 0.3);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .button-row .button {
+            flex: 1;
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+        }
+
+        #canvas-container {
+            width: 100%;
+            max-width: 540px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            background: #1a1a1a;
+        }
+
+        #canvas-container canvas {
+            display: block;
+            width: 100% !important;
+            height: auto !important;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--text-mid);
+            padding: 100px;
+        }
+
+        .progress-container {
+            margin-top: 12px;
+            background: var(--input-border);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--button-orange), #f5a623);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .progress-text {
+            font-size: 11px;
+            color: var(--text-mid);
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        .layer-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 4px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .layer-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--input-border);
+            transition: all 0.3s ease;
+        }
+
+        .layer-dot.complete {
+            background: #6a9b4a;
+        }
+
+        .layer-dot.active {
+            background: var(--button-orange);
+            transform: scale(1.3);
+        }
+
+        .color-group {
+            margin-bottom: 14px;
+        }
+
+        .color-group label {
+            display: block;
+            font-size: 12px;
+            color: var(--text-mid);
+            margin-bottom: 4px;
+        }
+
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-row input[type="color"] {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        .color-row input[type="range"] {
+            flex: 1;
+            height: 4px;
+            background: var(--input-border);
+            border-radius: 2px;
+            outline: none;
+            appearance: none;
+        }
+
+        .color-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--button-orange);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .color-row input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--button-orange);
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+        }
+
+        .color-value {
+            font-family: 'DM Sans', monospace;
+            font-size: 11px;
+            color: var(--text-mid);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        .back-link {
+            margin-bottom: 20px;
+        }
+
+        .back-link a {
+            color: var(--text-mid);
+            text-decoration: none;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+
+        .back-link a:hover {
+            color: var(--text-light);
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <div class="back-link">
+                <a href="index.html">← back to triptych</a>
+            </div>
+            <h1>composer</h1>
+            <div class="subtitle">new parameters = new compositions</div>
+
+            <!-- Seed Section -->
+            <div class="control-section">
+                <h3>seed</h3>
+                <input type="number" id="seed-input" class="seed-input" value="27" onchange="updateSeed()">
+                <div class="seed-controls">
+                    <button class="button secondary" onclick="previousSeed()">← prev</button>
+                    <button class="button secondary" onclick="nextSeed()">next →</button>
+                </div>
+                <button class="button tertiary" onclick="randomSeedAndUpdate()">↻ random</button>
+            </div>
+
+            <!-- Flock Parameters -->
+            <div class="control-section">
+                <h3>flock</h3>
+                
+                <div class="control-group">
+                    <label>number of layers</label>
+                    <div class="slider-container">
+                        <input type="range" id="layerCount" min="3" max="27" step="3" value="27" oninput="updateParam('layerCount', this.value)">
+                        <span class="value-display" id="layerCount-value">27</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>cycles</label>
+                    <div class="slider-container">
+                        <input type="range" id="cycles" min="0" max="9" step="1" value="3" oninput="updateCycles(this.value)">
+                        <span class="value-display" id="cycles-value">3</span>
+                    </div>
+                    <div class="hint">0 = infinite looping</div>
+                </div>
+
+                <div class="control-group">
+                    <label>streams per layer</label>
+                    <div class="slider-container">
+                        <input type="range" id="pathsPerLayer" min="1" max="9" step="1" value="3" oninput="updateParam('pathsPerLayer', this.value)">
+                        <span class="value-display" id="pathsPerLayer-value">3</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>flight duration (thousands)</label>
+                    <div class="slider-container">
+                        <input type="range" id="iterationsPerLayer" min="3" max="27" step="3" value="12" oninput="updateParam('iterationsPerLayer', this.value)">
+                        <span class="value-display" id="iterationsPerLayer-value">12</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bird Parameters -->
+            <div class="control-section">
+                <h3>birds</h3>
+
+                <div class="control-group">
+                    <label>element size</label>
+                    <div class="slider-container">
+                        <input type="range" id="elementSize" min="1" max="12" step="0.5" value="8" oninput="updateParam('elementSize', this.value)">
+                        <span class="value-display" id="elementSize-value">8</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>size variation</label>
+                    <div class="slider-container">
+                        <input type="range" id="sizeVariation" min="0" max="1" step="0.1" value="1" oninput="updateParam('sizeVariation', this.value)">
+                        <span class="value-display" id="sizeVariation-value">1</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>spacing</label>
+                    <div class="slider-container">
+                        <input type="range" id="spacing" min="1" max="20" step="1" value="18" oninput="updateParam('spacing', this.value)">
+                        <span class="value-display" id="spacing-value">18</span>
+                    </div>
+                    <div class="hint">steps between elements</div>
+                </div>
+
+                <div class="control-group">
+                    <label>drift (organic variation)</label>
+                    <div class="slider-container">
+                        <input type="range" id="drift" min="0" max="20" step="1" value="12" oninput="updateParam('drift', this.value)">
+                        <span class="value-display" id="drift-value">12</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flow Parameters -->
+            <div class="control-section">
+                <h3>flow</h3>
+
+                <div class="control-group">
+                    <label>ρ start</label>
+                    <div class="slider-container">
+                        <input type="range" id="rhoStart" min="18" max="28" step="0.5" value="21" oninput="updateParam('rhoStart', this.value)">
+                        <span class="value-display" id="rhoStart-value">21</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>ρ end</label>
+                    <div class="slider-container">
+                        <input type="range" id="rhoEnd" min="28" max="40" step="0.5" value="36" oninput="updateParam('rhoEnd', this.value)">
+                        <span class="value-display" id="rhoEnd-value">36</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div class="control-section">
+                <h3>colors (+ opacity)</h3>
+
+                <div class="color-group">
+                    <label>background</label>
+                    <div class="color-row">
+                        <input type="color" id="bgColor" value="#2e1800" onchange="updateBgColor(this.value)">
+                        <span class="color-value" id="bgColor-value">#2e1800</span>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>color 1</label>
+                    <div class="color-row">
+                        <input type="color" id="color1" value="#ff0000" onchange="updateElementColor(0, this.value)">
+                        <input type="range" id="opacity1" min="10" max="100" step="5" value="100" oninput="updateElementOpacity(0, this.value)">
+                        <span class="color-value" id="opacity1-value">100</span>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>color 2</label>
+                    <div class="color-row">
+                        <input type="color" id="color2" value="#00ff00" onchange="updateElementColor(1, this.value)">
+                        <input type="range" id="opacity2" min="10" max="100" step="5" value="100" oninput="updateElementOpacity(1, this.value)">
+                        <span class="color-value" id="opacity2-value">100</span>
+                    </div>
+                </div>
+
+                <div class="color-group">
+                    <label>color 3</label>
+                    <div class="color-row">
+                        <input type="color" id="color3" value="#0000ff" onchange="updateElementColor(2, this.value)">
+                        <input type="range" id="opacity3" min="10" max="100" step="5" value="100" oninput="updateElementOpacity(2, this.value)">
+                        <span class="color-value" id="opacity3-value">100</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Composition -->
+            <div class="control-section">
+                <h3>composition</h3>
+
+                <div class="control-group">
+                    <label>scale</label>
+                    <div class="slider-container">
+                        <input type="range" id="scale" min="12" max="60" step="1" value="36" oninput="updateParam('scale', this.value)">
+                        <span class="value-display" id="scale-value">36</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>horizontal offset</label>
+                    <div class="slider-container">
+                        <input type="range" id="offsetX" min="-500" max="500" step="10" value="-400" oninput="updateParam('offsetX', this.value)">
+                        <span class="value-display" id="offsetX-value">-400</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>vertical offset</label>
+                    <div class="slider-container">
+                        <input type="range" id="offsetY" min="-500" max="500" step="10" value="0" oninput="updateParam('offsetY', this.value)">
+                        <span class="value-display" id="offsetY-value">0</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>rotation</label>
+                    <div class="slider-container">
+                        <input type="range" id="rotation" min="0" max="360" step="5" value="240" oninput="updateParam('rotation', this.value)">
+                        <span class="value-display" id="rotation-value">240°</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Section -->
+            <div class="control-section">
+                <h3>progress</h3>
+                <div class="layer-indicator" id="layer-indicator"></div>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progress-bar"></div>
+                </div>
+                <div class="progress-text" id="progress-text">Ready</div>
+            </div>
+
+            <!-- Actions Section -->
+            <div class="control-section">
+                <h3>actions</h3>
+                <div class="button-row">
+                    <button class="button" onclick="resetParameters()">reset</button>
+                    <button class="button secondary" onclick="downloadImage()">save .png</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="canvas-area">
+            <div id="canvas-container">
+                <div class="loading">spinning...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // PARAMETERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let params = {
+            seed: 27,
+            layerCount: 27,
+            pathsPerLayer: 3,
+            iterationsPerLayer: 12,
+            // Bird/element parameters
+            elementSize: 8,
+            sizeVariation: 1,
+            spacing: 18,
+            drift: 12,
+            // Flow
+            rhoStart: 21,
+            rhoEnd: 36,
+            // Composition - rotation at 90 for vertical column effect
+            scale: 36,
+            offsetX: -400,
+            offsetY: 0,
+            rotation: 240,
+            // Fixed Lorenz parameters
+            sigma: 10,
+            beta: 8 / 3
+        };
+
+        let defaultParams = JSON.parse(JSON.stringify(params));
+
+        // Element colors (mutable for composer mode)
+        let elementColors = [
+            [255, 0, 0],      // Color 1: Red
+            [0, 255, 0],      // Color 2: Green
+            [0, 0, 255]       // Color 3: Blue
+        ];
+        
+        // Individual opacities for each color
+        let elementOpacities = [100, 100, 100];
+        
+        // Background color
+        let bgColor = [46, 24, 0];
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SYSTEM STATE
+        // ═══════════════════════════════════════════════════════════════════════
+
+        let currentLayer = 0;
+        let currentIteration = 0;
+        let iterationsPerLayer = 0;
+        let paths = [];
+        let isDrawing = false;
+        let layerSeeds = [];
+        
+        // Cycle tracking
+        let currentCycle = 0;
+        let maxCycles = 3;
+        let paletteInverted = false;
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // LORENZ PATH CLASS - Now with discrete element rendering
+        // ═══════════════════════════════════════════════════════════════════════
+
+        class LorenzPath {
+            constructor(layerIndex, pathIndex, rho) {
+                this.layerIndex = layerIndex;
+                this.pathIndex = pathIndex;
+                this.rho = rho;
+                
+                // Starting position with variation
+                let angle = (pathIndex / params.pathsPerLayer) * TWO_PI;
+                let offset = 0.01;
+                this.x = offset * cos(angle) + random(-0.005, 0.005);
+                this.y = offset * sin(angle) + random(-0.005, 0.005);
+                this.z = random(-0.005, 0.005);
+                
+                // Color index
+                this.colorIndex = pathIndex % 3;
+                
+                // Previous position for direction calculation
+                this.px = this.x;
+                this.py = this.y;
+                this.pz = this.z;
+                
+                // Step counter for spacing
+                this.stepCount = floor(random(params.spacing));
+                
+                // Layer rotation offset
+                this.rotationOffset = (layerIndex / params.layerCount) * 0.25;
+                
+                // Individual bird variation (persistent per path)
+                this.individualVariation = random(0.7, 1.3);
+            }
+
+            step(dt) {
+                this.px = this.x;
+                this.py = this.y;
+                this.pz = this.z;
+
+                let dx = params.sigma * (this.y - this.x);
+                let dy = this.x * (this.rho - this.z) - this.y;
+                let dz = this.x * this.y - params.beta * this.z;
+
+                this.x += dx * dt;
+                this.y += dy * dt;
+                this.z += dz * dt;
+                
+                this.stepCount++;
+            }
+
+            getScreenPos(x, y, z) {
+                let angle = (params.rotation * PI) / 180 + this.rotationOffset;
+                
+                // Rotate around Y axis
+                let rx = x * cos(angle) - z * sin(angle);
+                let rz = x * sin(angle) + z * cos(angle);
+                
+                // Tilt for depth
+                let tiltAngle = PI * 0.12;
+                let ry = y * cos(tiltAngle) - rz * sin(tiltAngle);
+                
+                // Scale and offset
+                let sx = width / 2 + rx * params.scale + params.offsetX;
+                let sy = height / 2 + ry * params.scale + params.offsetY;
+                
+                return { x: sx, y: sy };
+            }
+
+            draw(progress) {
+                // Only draw at spacing intervals
+                if (this.stepCount % params.spacing !== 0) return;
+                
+                let layerProgress = this.layerIndex / (params.layerCount - 1);
+                let colorProgress = layerProgress + (progress * 0.15);
+                colorProgress = constrain(colorProgress, 0, 1);
+                
+                let col = this.getInterpolatedColor(colorProgress);
+                let baseOpacity = this.getOpacity();
+                
+                // Get current screen position
+                let curr = this.getScreenPos(this.x, this.y, this.z);
+                let prev = this.getScreenPos(this.px, this.py, this.pz);
+                
+                // Calculate direction of movement for "banking"
+                let dir = atan2(curr.y - prev.y, curr.x - prev.x);
+                
+                // Add organic drift/noise
+                let noiseVal = noise(this.x * 0.5, this.y * 0.5, this.stepCount * 0.01);
+                let driftX = (noiseVal - 0.5) * params.drift * 2;
+                let driftY = (noise(this.y * 0.5, this.z * 0.5, this.stepCount * 0.01) - 0.5) * params.drift * 2;
+                
+                let drawX = curr.x + driftX;
+                let drawY = curr.y + driftY;
+                
+                // Size with variation
+                let baseSize = params.elementSize * this.individualVariation;
+                let sizeNoise = 1 + (noise(this.stepCount * 0.1, this.pathIndex) - 0.5) * params.sizeVariation;
+                let size = baseSize * sizeNoise;
+                
+                // Opacity varies with layer depth and individual variation
+                let depthFade = map(layerProgress, 0, 1, 0.5, 1.0);
+                let opacity = baseOpacity * depthFade * (0.7 + noiseVal * 0.6);
+                
+                // Draw the bird/element as a triangle
+                push();
+                translate(drawX, drawY);
+                rotate(dir + PI/2); // Orient along flight direction
+                
+                noStroke();
+                fill(col[0], col[1], col[2], opacity);
+                
+                // Triangle pointing in direction of travel
+                // Creates a form between natural and geometric
+                let h = size * 1.6;  // height
+                let w = size * 0.9;  // width at base
+                triangle(
+                    0, -h/2,           // top point (leading edge)
+                    -w/2, h/2,         // bottom left
+                    w/2, h/2           // bottom right
+                );
+                
+                pop();
+            }
+
+            getInterpolatedColor(t) {
+                // In composer mode, just use the element colors directly
+                return elementColors[this.colorIndex];
+            }
+            
+            getOpacity() {
+                return elementOpacities[this.colorIndex];
+            }
+        }
+
+        function easeInOutCubic(t) {
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // P5.JS SETUP AND DRAW
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function setup() {
+            let canvas = createCanvas(1080, 1920);
+            canvas.parent('canvas-container');
+            pixelDensity(1);
+            
+            initializeSystem();
+            
+            document.querySelector('.loading').style.display = 'none';
+        }
+
+        function initializeSystem(preserveCanvas = false) {
+            randomSeed(params.seed);
+            noiseSeed(params.seed);
+            
+            layerSeeds = [];
+            for (let i = 0; i < params.layerCount; i++) {
+                layerSeeds.push(floor(random(1, 999999)));
+            }
+
+            currentLayer = 0;
+            currentIteration = 0;
+            iterationsPerLayer = params.iterationsPerLayer * 1000;
+            isDrawing = true;
+            
+            if (!preserveCanvas) {
+                currentCycle = 0;
+                paletteInverted = false;
+                background(bgColor[0], bgColor[1], bgColor[2]);
+            }
+
+            initializeLayer(0);
+            createLayerIndicator();
+            updateProgress();
+            
+            loop();
+        }
+
+        function initializeLayer(layerIndex) {
+            randomSeed(layerSeeds[layerIndex]);
+            
+            let layerProgress = layerIndex / (params.layerCount - 1);
+            let rho = lerp(params.rhoStart, params.rhoEnd, layerProgress);
+            
+            paths = [];
+            for (let i = 0; i < params.pathsPerLayer; i++) {
+                paths.push(new LorenzPath(layerIndex, i, rho));
+            }
+            
+            currentIteration = 0;
+        }
+
+        function createLayerIndicator() {
+            let container = document.getElementById('layer-indicator');
+            container.innerHTML = '';
+            for (let i = 0; i < params.layerCount; i++) {
+                let dot = document.createElement('div');
+                dot.className = 'layer-dot';
+                dot.id = 'layer-dot-' + i;
+                container.appendChild(dot);
+            }
+        }
+
+        function updateLayerIndicator() {
+            for (let i = 0; i < params.layerCount; i++) {
+                let dot = document.getElementById('layer-dot-' + i);
+                if (dot) {
+                    dot.className = 'layer-dot';
+                    if (i < currentLayer) {
+                        dot.classList.add('complete');
+                    } else if (i === currentLayer && isDrawing) {
+                        dot.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        function draw() {
+            if (!isDrawing) return;
+
+            let stepsPerFrame = 300;
+            let dt = 0.006;
+
+            for (let i = 0; i < stepsPerFrame && currentIteration < iterationsPerLayer; i++) {
+                let iterProgress = currentIteration / iterationsPerLayer;
+
+                for (let path of paths) {
+                    path.step(dt);
+                    path.draw(iterProgress);
+                }
+
+                currentIteration++;
+            }
+
+            updateProgress();
+
+            if (currentIteration >= iterationsPerLayer) {
+                currentLayer++;
+                
+                if (currentLayer >= params.layerCount) {
+                    currentCycle++;
+                    
+                    if (maxCycles > 0 && currentCycle >= maxCycles) {
+                        isDrawing = false;
+                        noLoop();
+                        document.getElementById('progress-text').textContent = 
+                            'Complete — ' + currentCycle + ' cycle' + (currentCycle > 1 ? 's' : '');
+                        updateLayerIndicator();
+                    } else {
+                        paletteInverted = !paletteInverted;
+                        
+                        randomSeed(params.seed + currentCycle * 1000);
+                        layerSeeds = [];
+                        for (let i = 0; i < params.layerCount; i++) {
+                            layerSeeds.push(floor(random(1, 999999)));
+                        }
+                        
+                        currentLayer = 0;
+                        initializeLayer(0);
+                    }
+                } else {
+                    initializeLayer(currentLayer);
+                }
+            }
+        }
+
+        function updateProgress() {
+            let totalIterations = params.layerCount * iterationsPerLayer;
+            let completedIterations = (currentLayer * iterationsPerLayer) + currentIteration;
+            let percent = Math.round((completedIterations / totalIterations) * 100);
+            
+            document.getElementById('progress-bar').style.width = percent + '%';
+            
+            let cycleLabel = 'Cycle ' + (currentCycle + 1);
+            let paletteLabel = paletteInverted ? '(returning)' : '(outward)';
+            let layerLabel = 'Layer ' + (currentLayer + 1) + '/' + params.layerCount;
+            
+            document.getElementById('progress-text').textContent = 
+                cycleLabel + ' ' + paletteLabel + ' — ' + layerLabel;
+            
+            updateLayerIndicator();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI CONTROL HANDLERS
+        // ═══════════════════════════════════════════════════════════════════════
+
+        function hexToRgb(hex) {
+            let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+                parseInt(result[1], 16),
+                parseInt(result[2], 16),
+                parseInt(result[3], 16)
+            ] : [0, 0, 0];
+        }
+
+        function rgbToHex(r, g, b) {
+            return '#' + [r, g, b].map(x => {
+                const hex = Math.round(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        function updateBgColor(hex) {
+            bgColor = hexToRgb(hex);
+            document.getElementById('bgColor-value').textContent = hex;
+            loop();
+            initializeSystem(false);
+        }
+
+        function updateElementColor(index, hex) {
+            elementColors[index] = hexToRgb(hex);
+            // Don't restart - colors update in real-time on next draw
+        }
+
+        function updateElementOpacity(index, value) {
+            elementOpacities[index] = parseInt(value);
+            document.getElementById('opacity' + (index + 1) + '-value').textContent = value;
+        }
+
+        function updateCycles(value) {
+            maxCycles = parseInt(value);
+            document.getElementById('cycles-value').textContent = maxCycles === 0 ? '∞' : maxCycles;
+        }
+
+        function updateParam(paramName, value) {
+            params[paramName] = parseFloat(value);
+            
+            if (paramName === 'rotation') {
+                document.getElementById(paramName + '-value').textContent = value + '°';
+            } else {
+                document.getElementById(paramName + '-value').textContent = value;
+            }
+            
+            loop();
+            initializeSystem(false);
+        }
+
+        function updateSeedDisplay() {
+            document.getElementById('seed-input').value = params.seed;
+        }
+
+        function updateSeed() {
+            let input = document.getElementById('seed-input');
+            let newSeed = parseInt(input.value);
+            if (newSeed && newSeed > 0) {
+                params.seed = newSeed;
+                loop();
+                initializeSystem(false);
+            } else {
+                updateSeedDisplay();
+            }
+        }
+
+        function previousSeed() {
+            params.seed = Math.max(1, params.seed - 1);
+            updateSeedDisplay();
+            loop();
+            initializeSystem(false);
+        }
+
+        function nextSeed() {
+            params.seed = params.seed + 1;
+            updateSeedDisplay();
+            loop();
+            initializeSystem(false);
+        }
+
+        function randomSeedAndUpdate() {
+            params.seed = Math.floor(Math.random() * 999999) + 1;
+            updateSeedDisplay();
+            loop();
+            initializeSystem(false);
+        }
+
+        function resetParameters() {
+            params = JSON.parse(JSON.stringify(defaultParams));
+            maxCycles = 3;
+            
+            // Reset colors
+            elementColors = [
+                [255, 0, 0],
+                [0, 255, 0],
+                [0, 0, 255]
+            ];
+            elementOpacities = [100, 100, 100];
+            bgColor = [46, 24, 0];
+            
+            document.getElementById('layerCount').value = params.layerCount;
+            document.getElementById('layerCount-value').textContent = params.layerCount;
+            document.getElementById('cycles').value = 3;
+            document.getElementById('cycles-value').textContent = '3';
+            document.getElementById('pathsPerLayer').value = params.pathsPerLayer;
+            document.getElementById('pathsPerLayer-value').textContent = params.pathsPerLayer;
+            document.getElementById('iterationsPerLayer').value = params.iterationsPerLayer;
+            document.getElementById('iterationsPerLayer-value').textContent = params.iterationsPerLayer;
+            document.getElementById('elementSize').value = params.elementSize;
+            document.getElementById('elementSize-value').textContent = params.elementSize;
+            document.getElementById('sizeVariation').value = params.sizeVariation;
+            document.getElementById('sizeVariation-value').textContent = params.sizeVariation;
+            document.getElementById('spacing').value = params.spacing;
+            document.getElementById('spacing-value').textContent = params.spacing;
+            document.getElementById('drift').value = params.drift;
+            document.getElementById('drift-value').textContent = params.drift;
+            document.getElementById('rhoStart').value = params.rhoStart;
+            document.getElementById('rhoStart-value').textContent = params.rhoStart;
+            document.getElementById('rhoEnd').value = params.rhoEnd;
+            document.getElementById('rhoEnd-value').textContent = params.rhoEnd;
+            document.getElementById('scale').value = params.scale;
+            document.getElementById('scale-value').textContent = params.scale;
+            document.getElementById('offsetX').value = params.offsetX;
+            document.getElementById('offsetX-value').textContent = params.offsetX;
+            document.getElementById('offsetY').value = params.offsetY;
+            document.getElementById('offsetY-value').textContent = params.offsetY;
+            document.getElementById('rotation').value = params.rotation;
+            document.getElementById('rotation-value').textContent = params.rotation + '°';
+            
+            // Reset color controls
+            document.getElementById('bgColor').value = '#2e1800';
+            document.getElementById('bgColor-value').textContent = '#2e1800';
+            document.getElementById('color1').value = '#ff0000';
+            document.getElementById('color2').value = '#00ff00';
+            document.getElementById('color3').value = '#0000ff';
+            document.getElementById('opacity1').value = 100;
+            document.getElementById('opacity1-value').textContent = '100';
+            document.getElementById('opacity2').value = 100;
+            document.getElementById('opacity2-value').textContent = '100';
+            document.getElementById('opacity3').value = 100;
+            document.getElementById('opacity3-value').textContent = '100';
+            
+            updateSeedDisplay();
+            loop();
+            initializeSystem(false);
+        }
+
+        function downloadImage() {
+            saveCanvas('fall-back-01-murmuration-seed-' + params.seed, 'png');
+        }
+
+        window.addEventListener('load', function() {
+            updateSeedDisplay();
+        });
+    </script>
+</body>
+</html>
