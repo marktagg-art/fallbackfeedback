@@ -2,7 +2,7 @@
 
 Generative artwork exploring the intersection of chaos theory and collective behavior. Triangular "birds" ride invisible currents shaped by the Lorenz strange attractor.
 
-**[View the artwork →](https://yourusername.github.io/fall-back-01/)**
+**[View the artwork →]([https://marktagg-art.github.io/fallbackfeedback/])**
 
 ---
 
